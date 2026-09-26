@@ -236,3 +236,56 @@ describe('covers (R-11)', () => {
     expect(html).toContain('loading="eager"');
   });
 });
+
+describe('deployment base (R-12)', () => {
+  const SITE = 'https://jackasser.github.io';
+
+  it('AC-12-6: every deployed URL in the head sits under the base and ends where the host serves it', () => {
+    for (const relative of ['', 'entries', 'ja', 'ja/entries', `entries/${entries[0]!.id}`]) {
+      const html = page(relative);
+      const canonical = /<link rel="canonical" href="([^"]+)"/.exec(html)?.[1] ?? '';
+      expect(canonical.startsWith(`${SITE}${BASE_ROOT}`), `${relative || '/'} canonical`).toBe(true);
+      expect(canonical.endsWith('/'), `${relative || '/'} canonical slash`).toBe(true);
+
+      const alternates = [...html.matchAll(/<link rel="alternate" hreflang="[^"]+" href="([^"]+)"/g)].map(
+        (m) => m[1]!,
+      );
+      expect(alternates, `${relative || '/'} alternates`).toHaveLength(3);
+      for (const href of alternates) {
+        expect(href.startsWith(`${SITE}${BASE_ROOT}`), `${relative || '/'}: ${href}`).toBe(true);
+      }
+    }
+  });
+
+  it('AC-12-6: the feeds carry the base on the channel link and on every item', () => {
+    for (const [relative, prefix] of [
+      ['rss.xml', `${SITE}${BASE_ROOT}`],
+      ['ja/rss.xml', `${SITE}${BASE_ROOT}ja/`],
+    ] as const) {
+      const xml = read(relative);
+      const links = [...xml.matchAll(/<link>([^<]+)<\/link>/g)].map((m) => m[1]!);
+      expect(links.length, relative).toBeGreaterThan(entries.length);
+      for (const link of links) expect(link.startsWith(prefix), `${relative}: ${link}`).toBe(true);
+    }
+  });
+
+  it('AC-12-6: robots.txt and the sitemap stay under the base', () => {
+    expect(read('robots.txt')).toContain(`${SITE}${BASE_ROOT}sitemap-index.xml`);
+    const sitemap = read('sitemap-0.xml');
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!);
+    expect(locs.length).toBeGreaterThan(0);
+    for (const loc of locs) expect(loc.startsWith(`${SITE}${BASE_ROOT}`), loc).toBe(true);
+  });
+
+  it('AC-12-6: no asset or page link forgets the base', () => {
+    for (const relative of ['', 'entries', 'ja/entries', `entries/${entries[0]!.id}`]) {
+      const html = page(relative);
+      const roots = [...html.matchAll(/(?:href|src)="(\/[^"]*)"/g)].map((m) => m[1]!);
+      expect(roots.length, relative || '/').toBeGreaterThan(0);
+      for (const url of roots) {
+        expect(url.startsWith(BASE_ROOT), `${relative || '/'}: ${url}`).toBe(true);
+      }
+    }
+    expect(BASE).not.toBe('');
+  });
+});

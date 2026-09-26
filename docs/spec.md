@@ -1,6 +1,6 @@
 # Jev Hub 仕様書
 
-作成: 2026-09-26 / 状態: R-01〜R-12 の全 AC にテストあり・Green（ユニット 109 / dist 21 / E2E 14）。最終更新 2026-09-26
+作成: 2026-09-26 / 状態: R-01〜R-12 の全 AC にテストあり・Green（ユニット 110 / dist 25 / E2E 14）。最終更新 2026-09-26
 
 > **この文書が正。** 仕様に無いものは作らない。仕様を変えるときは先にここを直し、次にテスト、最後に実装。
 > 各受け入れ条件（AC）は必ずテスト ID を持つ。`todo` はまだテストが無い条件。
@@ -233,8 +233,10 @@ GitHub Pages のプロジェクトサイトとして `https://jackasser.github.i
   各コンポーネントは base を意識しない。
 - 逆向きの `stripLocale()` / `localeFromPath()` は base を取り除いてから判定する
   （`/jev-hub/ja/entries` を日本語ページとして認識できるようにするため）。
-- canonical・hreflang・RSS の各項目・sitemap・`robots.txt` の Sitemap 行は、すべて `SITE + BASE` を基準にする。
-  公開トップ（`BASE + "/"`）だけは末尾スラッシュを落とさない。
+- canonical・hreflang・RSS・sitemap・`robots.txt` の Sitemap 行は、すべて `SITE + BASE` を基準にする。
+- GitHub Pages はディレクトリを末尾スラッシュ付きでしか配信せず、スラッシュ無しは 301 で飛ばす。
+  そのためページへのリンク・canonical・sitemap は**末尾スラッシュ付きで出す**（拡張子のあるファイルは付けない）。
+  リダイレクトを経由する URL を canonical に書かない。
 - `main` への push で GitHub Actions がビルドし、`astro check` → ユニット → ビルド → ビルド成果物テストが
   通ったときだけ Pages へ公開する。E2E はプレビューサーバーの常駐が要るのでローカルの `npm run verify` で回す。
 

@@ -19,7 +19,7 @@ export function t(locale: Locale, key: MessageKey): string {
  * (always starts with "/"). R-12: the inverse of `localePath`.
  */
 export function stripLocale(path: string): string {
-  const bare = stripBase(path);
+  const bare = withoutTrailingSlash(stripBase(path));
   if (bare === '/ja' || bare.startsWith('/ja/')) {
     const rest = bare.slice(3);
     return rest === '' ? '/' : rest;
@@ -28,7 +28,7 @@ export function stripLocale(path: string): string {
 }
 
 export function localeFromPath(path: string): Locale {
-  const bare = stripBase(path);
+  const bare = withoutTrailingSlash(stripBase(path));
   return bare === '/ja' || bare.startsWith('/ja/') ? 'ja' : 'en';
 }
 
@@ -39,8 +39,25 @@ export function localeFromPath(path: string): Locale {
  */
 export function localePath(locale: Locale, path: string): string {
   const bare = stripLocale(path);
-  if (locale === 'en') return withBase(bare);
-  return withBase(bare === '/' ? '/ja/' : `/ja${bare}`);
+  const localised = locale === 'en' ? bare : bare === '/' ? '/ja/' : `/ja${bare}`;
+  return withBase(withTrailingSlash(localised));
+}
+
+/** "/entries/" -> "/entries"; the root and file paths are left alone. */
+function withoutTrailingSlash(path: string): string {
+  if (path === '') return '/';
+  if (path === '/' || !path.endsWith('/')) return path;
+  return path.replace(/\/+$/, '') || '/';
+}
+
+/**
+ * GitHub Pages serves a directory only at its slashed URL and 301s the bare one, so every
+ * page link carries the slash (R-12). A path with an extension is a file, not a directory.
+ */
+function withTrailingSlash(path: string): string {
+  if (path.endsWith('/')) return path;
+  const last = path.split('/').pop() ?? '';
+  return last.includes('.') ? path : `${path}/`;
 }
 
 /**

@@ -43,8 +43,8 @@ describe('i18n', () => {
   });
 
   it('AC-05-1: the English path carries no locale prefix and the Japanese one does', () => {
-    expect(localePath('en', '/entries')).toBe(withBase('/entries'));
-    expect(localePath('ja', '/entries')).toBe(withBase('/ja/entries'));
+    expect(localePath('en', '/entries')).toBe(withBase('/entries/'));
+    expect(localePath('ja', '/entries')).toBe(withBase('/ja/entries/'));
     expect(localePath('en', '/')).toBe(BASE_ROOT);
     expect(localePath('ja', '/')).toBe(withBase('/ja/'));
   });
@@ -65,8 +65,17 @@ describe('i18n', () => {
     expect(localeFromPath('/jaggedness')).toBe('en');
   });
 
+  it('AC-12-4: a page link ends in a slash, a file link does not', () => {
+    expect(localePath('en', '/entries').endsWith('/')).toBe(true);
+    expect(localePath('en', '/entries/localjev').endsWith('/')).toBe(true);
+    expect(localePath('en', '/rss.xml')).toBe(withBase('/rss.xml'));
+    expect(localePath('ja', '/rss.xml')).toBe(withBase('/ja/rss.xml'));
+  });
+
   it('AC-12-3: localeFromPath reads a real browser pathname, base and all', () => {
     expect(localeFromPath(`${BASE}/entries`)).toBe('en');
+    expect(localeFromPath(`${BASE}/entries/`)).toBe('en');
+    expect(localeFromPath(`${BASE}/ja/`)).toBe('ja');
     expect(localeFromPath(`${BASE}/ja/entries`)).toBe('ja');
     expect(localeFromPath(BASE_ROOT)).toBe('en');
     expect(localeFromPath(withBase('/ja/'))).toBe('ja');
@@ -84,7 +93,7 @@ describe('i18n', () => {
   });
 
   it('AC-04-3: a category link lands on the list with the facet preselected', () => {
-    expect(categoryPath('en', 'oss')).toBe(`${withBase('/entries')}?category=oss`);
-    expect(categoryPath('ja', 'oss')).toBe(`${withBase('/ja/entries')}?category=oss`);
+    expect(categoryPath('en', 'oss')).toBe(`${withBase('/entries/')}?category=oss`);
+    expect(categoryPath('ja', 'oss')).toBe(`${withBase('/ja/entries/')}?category=oss`);
   });
 });

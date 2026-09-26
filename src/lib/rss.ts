@@ -10,7 +10,8 @@ export async function feed(locale: Locale, site: URL | undefined) {
   return rss({
     title: t(locale, 'site.name'),
     description: t(locale, 'site.description'),
-    site: site?.toString() ?? 'https://example.com',
+    // R-12: the feed points at the deployed site root, not the bare origin.
+    site: new URL(localePath(locale, '/'), site ?? 'https://example.com').toString(),
     items: entries.map((entry) => ({
       title: entry.name,
       description: locale === 'ja' ? entry.description_ja : entry.description_en,

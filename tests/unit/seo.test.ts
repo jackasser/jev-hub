@@ -49,8 +49,8 @@ describe('seo', () => {
   it('alternates returns en, ja and x-default as absolute URLs', () => {
     const links = alternates(SITE, '/entries/jev');
     expect(links.map((l) => l.hreflang)).toEqual(['en', 'ja', 'x-default']);
-    expect(links[0]!.href).toBe(`${SITE}${BASE}/entries/jev`);
-    expect(links[1]!.href).toBe(`${SITE}${BASE}/ja/entries/jev`);
+    expect(links[0]!.href).toBe(`${SITE}${BASE}/entries/jev/`);
+    expect(links[1]!.href).toBe(`${SITE}${BASE}/ja/entries/jev/`);
     expect(links[2]!.href).toBe(links[0]!.href);
   });
 
@@ -62,15 +62,18 @@ describe('seo', () => {
     }
   });
 
-  it('AC-12-5: the deployed site root keeps its trailing slash, deeper pages do not', () => {
+  it('AC-12-5: canonical is the URL the host actually serves, slash and all', () => {
     expect(canonical(SITE, localePath('en', '/'))).toBe(`${SITE}${BASE_ROOT}`);
-    expect(canonical(SITE, localePath('en', '/entries'))).toBe(`${SITE}${BASE}/entries`);
-    expect(canonical(SITE, localePath('ja', '/'))).toBe(`${SITE}${BASE}/ja`);
+    expect(canonical(SITE, localePath('en', '/entries'))).toBe(`${SITE}${BASE}/entries/`);
+    expect(canonical(SITE, localePath('ja', '/'))).toBe(`${SITE}${BASE}/ja/`);
+    expect(canonical(SITE, localePath('en', '/rss.xml'))).toBe(`${SITE}${BASE}/rss.xml`);
   });
 
-  it('canonical drops a trailing slash except at the site root', () => {
-    expect(canonical(SITE, '/')).toBe('https://example.com/');
-    expect(canonical(SITE, '/entries/')).toBe('https://example.com/entries');
-    expect(canonical(SITE, '/ja/')).toBe('https://example.com/ja');
+  it('AC-12-5: no canonical or alternate points at a URL that would redirect', () => {
+    for (const path of ['/', '/entries', '/entries/jev', '/about', '/what-is-jev']) {
+      for (const link of alternates(SITE, path)) {
+        expect(link.href.endsWith('/'), `${path} ${link.hreflang}`).toBe(true);
+      }
+    }
   });
 });
