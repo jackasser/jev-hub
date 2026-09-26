@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryGrid from '../EntryGrid.astro';
+import { loadEntries } from '../../lib/load';
+import { byCategory } from '../../lib/entries';
+import { CATEGORY_META, type Category, type Locale } from '../../lib/taxonomy';
+import { t, categoryPath } from '../../i18n';
+
+interface Props {
+  locale: Locale;
+  category: Category;
+}
+
+const { locale, category } = Astro.props;
+const meta = CATEGORY_META[category];
+const entries = byCategory(await loadEntries(), category);
+---
+
+<BaseLayout
+  title={meta.label[locale]}
+  description={meta.blurb[locale]}
+  path={`/category/${category}`}
+  locale={locale}
+>
+  <h1>{meta.label[locale]}</h1>
+  <p class="lead">{meta.blurb[locale]}</p>
+  <p><a href={categoryPath(locale, category)}>{t(locale, 'entries.title')}</a></p>
+  <EntryGrid entries={entries} locale={locale} />
+</BaseLayout>

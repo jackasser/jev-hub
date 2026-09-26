@@ -1,0 +1,142 @@
+---
+import EntryGrid from './EntryGrid.astro';
+import type { Entry } from '../lib/schema';
+import { CATEGORIES, CATEGORY_META, type Locale } from '../lib/taxonomy';
+import { SORT_MODES } from '../lib/sort';
+import { t } from '../i18n';
+import { toSearchIndex } from '../lib/entries';
+
+interface Props {
+  entries: Entry[];
+  locale: Locale;
+}
+
+const { entries, locale } = Astro.props;
+const index = toSearchIndex(entries);
+const sortLabels: Record<(typeof SORT_MODES)[number], string> = {
+  featured: t(locale, 'entries.sort.featured'),
+  stars: t(locale, 'entries.sort.stars'),
+  newest: t(locale, 'entries.sort.newest'),
+};
+---
+
+<div class="controls" data-controls>
+  <div class="field field-grow">
+    <label for="q">{t(locale, 'entries.search.label')}</label>
+    <input id="q" type="search" autocomplete="off" placeholder={t(locale, 'entries.search.placeholder')} />
+  </div>
+  <div class="field">
+    <label for="category">{t(locale, 'entries.filter.category')}</label>
+    <select id="category">
+      <option value="">{t(locale, 'entries.filter.all')}</option>
+      {CATEGORIES.map((c) => <option value={c}>{CATEGORY_META[c].label[locale]}</option>)}
+    </select>
+  </div>
+  <div class="field">
+    <label for="sort">{t(locale, 'entries.sort.label')}</label>
+    <select id="sort">
+      {SORT_MODES.map((m) => <option value={m}>{sortLabels[m]}</option>)}
+    </select>
+  </div>
+</div>
+
+<p
+  class="result-count"
+  data-count
+  data-total={String(entries.length)}
+  data-showing={t(locale, 'entries.showing')}
+  data-of={t(locale, 'entries.of')}
+>
+  {t(locale, 'entries.showing')} {entries.length} {t(locale, 'entries.of')} {entries.length}
+</p>
+
+<EntryGrid entries={entries} locale={locale} gridId="entry-grid" />
+
+<p class="empty" data-empty hidden>{t(locale, 'entries.empty')}</p>
+
+<script type="application/json" data-search-index set:html={JSON.stringify(index)} />
+
+<script>
+  import Fuse from 'fuse.js';
+  import { sortRows, isSortMode, DEFAULT_SORT, type SortMode } from '../lib/sort';
+
+  interface IndexItem {
+    id: string;
+    name: string;
+    category: string;
+    tags: string[];
+    org: string;
+    description_en: string;
+    description_ja: string;
+  }
+
+  const grid = document.querySelector<HTMLElement>('[data-grid="entry-grid"]');
+  const payload = document.querySelector<HTMLScriptElement>('[data-search-index]');
+  const q = document.querySelector<HTMLInputElement>('#q');
+  const categorySelect = document.querySelector<HTMLSelectElement>('#category');
+  const sortSelect = document.querySelector<HTMLSelectElement>('#sort');
+  const countEl = document.querySelector<HTMLElement>('[data-count]');
+  const emptyEl = document.querySelector<HTMLElement>('[data-empty]');
+
+  if (grid && payload && q && categorySelect && sortSelect && countEl && emptyEl) {
+    const items: IndexItem[] = JSON.parse(payload.textContent || '[]');
+    const fuse = new Fuse(items, {
+      keys: ['name', 'org', 'tags', 'description_en', 'description_ja'],
+      threshold: 0.35,
+      ignoreLocation: true,
+    });
+
+    // The cards carry their own sort keys; a `name="category"` control in a form would
+    // shadow `form.dataset`, so every data attribute is read with getAttribute.
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.card'));
+    const rows = cards.map((card) => ({
+      id: card.getAttribute('data-entry') ?? '',
+      category: card.getAttribute('data-category') ?? '',
+      stars: parseStars(card.getAttribute('data-stars')),
+      addedAt: card.getAttribute('data-added') ?? '',
+      card,
+    }));
+
+    const showingWord = countEl.getAttribute('data-showing') ?? '';
+    const ofWord = countEl.getAttribute('data-of') ?? '';
+
+    const params = new URLSearchParams(location.search);
+    const initialCategory = params.get('category') ?? '';
+    if (initialCategory && Array.from(categorySelect.options).some((o) => o.value === initialCategory)) {
+      categorySelect.value = initialCategory;
+    }
+    const initialSort = params.get('sort') ?? '';
+    if (isSortMode(initialSort)) sortSelect.value = initialSort;
+
+    const apply = () => {
+      const term = q.value.trim();
+      const category = categorySelect.value;
+      const mode: SortMode = isSortMode(sortSelect.value) ? sortSelect.value : DEFAULT_SORT;
+
+      const matched = term ? new Set(fuse.search(term).map((r) => r.item.id)) : null;
+      let shown = 0;
+      for (const row of rows) {
+        const visible = (!category || row.category === category) && (!matched || matched.has(row.id));
+        row.card.hidden = !visible;
+        if (visible) shown += 1;
+      }
+
+      for (const row of sortRows(rows, mode)) grid.appendChild(row.card);
+
+      countEl.textContent = `${showingWord} ${shown} ${ofWord} ${rows.length}`;
+      emptyEl.hidden = shown !== 0;
+    };
+
+    q.addEventListener('input', apply);
+    categorySelect.addEventListener('change', apply);
+    sortSelect.addEventListener('change', apply);
+    apply();
+  }
+
+  function parseStars(value: string | null): number | undefined {
+    if (value === null || value === '') return undefined;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : undefined;
+  }
+
+</script>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t, localePath } from '../../i18n';
+import type { Locale } from '../../lib/taxonomy';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<BaseLayout
+  title={t(locale, '404.title')}
+  description={t(locale, '404.body')}
+  path="/404"
+  locale={locale}
+  noindex={true}
+>
+  <h1>{t(locale, '404.title')}</h1>
+  <p class="lead">{t(locale, '404.body')}</p>
+  <p>
+    <a class="btn btn-primary" href={localePath(locale, '/entries')}>{t(locale, 'nav.entries')}</a>
+    <a class="btn" href={localePath(locale, '/')}>{t(locale, 'nav.home')}</a>
+  </p>
+</BaseLayout>

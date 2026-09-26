@@ -1,0 +1,13 @@
+---
+import EntryDetailPage from '../../components/pages/EntryDetailPage.astro';
+import { loadEntries } from '../../lib/load';
+
+export async function getStaticPaths() {
+  const entries = await loadEntries();
+  return entries.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+---
+
+<EntryDetailPage entry={entry} locale="en" />

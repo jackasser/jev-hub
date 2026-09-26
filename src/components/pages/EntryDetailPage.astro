@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Badge from '../Badge.astro';
+import EntryGrid from '../EntryGrid.astro';
+import type { Entry } from '../../lib/schema';
+import { loadEntries } from '../../lib/load';
+import { byCategory } from '../../lib/entries';
+import { CATEGORY_META, type Locale } from '../../lib/taxonomy';
+import { t, localePath, categoryPath } from '../../i18n';
+import { jsonLd, serializeJsonLd } from '../../lib/seo';
+
+interface Props {
+  entry: Entry;
+  locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+const meta = CATEGORY_META[entry.category];
+const description = locale === 'ja' ? entry.description_ja : entry.description_en;
+const related = byCategory(await loadEntries(), entry.category).filter((e) => e.id !== entry.id);
+const ld = serializeJsonLd(jsonLd(entry, locale));
+---
+
+<BaseLayout
+  title={entry.name}
+  description={description}
+  path={`/entries/${entry.id}`}
+  locale={locale}
+  jsonLd={ld}
+>
+  <article>
+    <div class="detail-head">
+      <p class="card-top">
+        <a href={categoryPath(locale, entry.category)}>{meta.label[locale]}</a>
+        {entry.official && <Badge variant="accent">{t(locale, 'card.official')}</Badge>}
+        {entry.status === 'archived' && <Badge variant="flag">archived</Badge>}
+      </p>
+      <h1>{entry.name}</h1>
+      <p class="lead">{description}</p>
+      <div class="detail-actions">
+        <a class="btn btn-primary" href={entry.url} rel="noopener noreferrer" target="_blank">
+          {t(locale, 'detail.visit')}
+        </a>
+        {
+          entry.repoUrl && entry.repoUrl !== entry.url && (
+            <a class="btn" href={entry.repoUrl} rel="noopener noreferrer" target="_blank">
+              {t(locale, 'detail.repo')}
+            </a>
+          )
+        }
+      </div>
+      {
+        entry.tags.length > 0 && (
+          <ul class="tag-row">
+            {entry.tags.map((tag) => (
+              <li>
+                <Badge>{tag}</Badge>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <dl class="facts">
+      <dt>{t(locale, 'detail.org')}</dt>
+      <dd>{entry.org}{entry.region ? ` (${entry.region})` : ''}</dd>
+      {entry.license && <dt>{t(locale, 'detail.license')}</dt>}
+      {entry.license && <dd>{entry.license}</dd>}
+      {entry.language && <dt>{t(locale, 'detail.language')}</dt>}
+      {entry.language && <dd>{entry.language}</dd>}
+      {entry.stars !== undefined && <dt>{t(locale, 'detail.stars')}</dt>}
+      {
+        entry.stars !== undefined && (
+          <dd>
+            {entry.stars.toLocaleString('en-US')}
+            {entry.starsUpdatedAt ? ` (${entry.starsUpdatedAt})` : ''}
+          </dd>
+        )
+      }
+      <dt>{t(locale, 'detail.published')}</dt>
+      <dd>{entry.date}</dd>
+      <dt>{t(locale, 'detail.added')}</dt>
+      <dd>{entry.addedAt}</dd>
+    </dl>
+
+    <section>
+      <div class="section-head">
+        <h2>{t(locale, 'detail.sources')}</h2>
+      </div>
+      <ul class="sources">
+        {
+          entry.sourceRefs.map((ref) => (
+            <li>
+              <a href={ref} rel="noopener noreferrer" target="_blank">
+                {ref}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      related.length > 0 && (
+        <section>
+          <div class="section-head">
+            <h2>{t(locale, 'detail.related')}</h2>
+            <a href={categoryPath(locale, entry.category)}>{meta.label[locale]}</a>
+          </div>
+          <EntryGrid entries={related.slice(0, 3)} locale={locale} />
+        </section>
+      )
+    }
+
+    <p><a href={localePath(locale, '/entries')}>{t(locale, 'detail.back')}</a></p>
+  </article>
+</BaseLayout>

@@ -1,0 +1,38 @@
+---
+import LangToggle from './LangToggle.astro';
+import { t, localePath, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  /** Locale-agnostic path of the current page. */
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+
+const items: { href: string; key: Parameters<typeof t>[1] }[] = [
+  { href: '/', key: 'nav.home' },
+  { href: '/entries', key: 'nav.entries' },
+  { href: '/what-is-jev', key: 'nav.explainer' },
+  { href: '/about', key: 'nav.about' },
+];
+---
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href={localePath(locale, '/')}>
+      <span class="mark">jev</span>
+      <span>{t(locale, 'site.name')}</span>
+    </a>
+    <nav class="site-nav" aria-label={t(locale, 'nav.entries')}>
+      {
+        items.map((item) => (
+          <a href={localePath(locale, item.href)} aria-current={item.href === path ? 'page' : undefined}>
+            {t(locale, item.key)}
+          </a>
+        ))
+      }
+    </nav>
+    <LangToggle locale={locale} path={path} />
+  </div>
+</header>

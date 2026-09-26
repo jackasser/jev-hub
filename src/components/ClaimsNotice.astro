@@ -1,0 +1,19 @@
+---
+import Callout from './Callout.astro';
+import { t, type Locale } from '../i18n';
+
+/**
+ * R-03. The one place the vendor-claim notice is written, so every page that shows a
+ * published figure shows the same wording and a test can check it once.
+ */
+interface Props {
+  locale: Locale;
+  level?: 2 | 3;
+}
+
+const { locale, level = 2 } = Astro.props;
+---
+
+<Callout heading={t(locale, 'claims.title')} level={level}>
+  <p data-claims-notice>{t(locale, 'claims.body')}</p>
+</Callout>

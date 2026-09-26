@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryGrid from '../EntryGrid.astro';
+import ClaimsNotice from '../ClaimsNotice.astro';
+import { loadEntries } from '../../lib/load';
+import { featured, latest, countByCategory } from '../../lib/entries';
+import { CATEGORIES, CATEGORY_META, type Locale } from '../../lib/taxonomy';
+import { t, localePath, categoryPath } from '../../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const entries = await loadEntries();
+const counts = countByCategory(entries);
+const top = featured(entries);
+const recent = latest(entries, 6);
+---
+
+<BaseLayout
+  title={t(locale, 'site.name')}
+  description={t(locale, 'site.description')}
+  path="/"
+  locale={locale}
+>
+  <section>
+    <h1>{t(locale, 'site.tagline')}</h1>
+    <p class="lead">{t(locale, 'home.lead')}</p>
+    <p>
+      <a class="btn btn-primary" href={localePath(locale, '/entries')}>{t(locale, 'home.viewAll')}</a>
+      <a class="btn" href={localePath(locale, '/what-is-jev')}>{t(locale, 'nav.explainer')}</a>
+    </p>
+  </section>
+
+  <section>
+    <ClaimsNotice locale={locale} />
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{t(locale, 'home.featured')}</h2>
+      <a href={localePath(locale, '/entries')}>{t(locale, 'home.viewAll')}</a>
+    </div>
+    <EntryGrid entries={top} locale={locale} />
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{t(locale, 'home.categories')}</h2>
+    </div>
+    <ul class="cat-list">
+      {
+        CATEGORIES.map((c) => (
+          <li>
+            <a href={categoryPath(locale, c)}>
+              <strong>
+                {CATEGORY_META[c].label[locale]}
+                <span class="n">{counts[c]}</span>
+              </strong>
+              <p>{CATEGORY_META[c].blurb[locale]}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{t(locale, 'home.latest')}</h2>
+    </div>
+    <EntryGrid entries={recent} locale={locale} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Callout from '../Callout.astro';
+import ClaimsNotice from '../ClaimsNotice.astro';
+import { INTRO, STEPS, QUESTION_TYPES, CAVEAT } from '../../data/explainer';
+import { loadEntries } from '../../lib/load';
+import { byCategory } from '../../lib/entries';
+import { t, localePath } from '../../i18n';
+import type { Locale } from '../../lib/taxonomy';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const entries = await loadEntries();
+const gateways = byCategory(entries, 'gateway');
+const open = byCategory(entries, 'oss');
+---
+
+<BaseLayout
+  title={t(locale, 'explainer.title')}
+  description={t(locale, 'explainer.lead')}
+  path="/what-is-jev"
+  locale={locale}
+>
+  <h1>{t(locale, 'explainer.title')}</h1>
+  <p class="lead">{t(locale, 'explainer.lead')}</p>
+
+  <section class="prose">
+    <p>{INTRO[locale]}</p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{locale === 'ja' ? '呼び出しの形' : 'The shape of a call'}</h2>
+    </div>
+    <ol class="steps">
+      {
+        STEPS.map((step) => (
+          <li>
+            <h3>{step.heading[locale]}</h3>
+            <p>{step.body[locale]}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{locale === 'ja' ? '3 種類の質問' : 'The three question types'}</h2>
+    </div>
+    <ul class="qtypes">
+      {
+        QUESTION_TYPES.map((q) => (
+          <li>
+            <h3><code>{q.name}</code></h3>
+            <p><strong>{locale === 'ja' ? '返るもの: ' : 'Returns: '}</strong>{q.returns[locale]}</p>
+            <p>{q.body[locale]}</p>
+            <p class="card-foot">
+              <a href={q.sourceRef} rel="noopener noreferrer" target="_blank">{q.sourceRef}</a>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>{locale === 'ja' ? 'どこから触れるか' : 'Where you can reach it'}</h2>
+    </div>
+    <p class="prose">
+      {
+        locale === 'ja'
+          ? '公式の API のほかに、すでに持っているキーのまま到達できる中継先がある。手元の機材で動かしたいなら、同じ通信形式を話すオープン実装がある。'
+          : 'Besides the official API there are relays you can reach with a key you already have. If you want it on your own hardware, there are open implementations that speak the same protocol.'
+      }
+    </p>
+    <ul class="sources">
+      {
+        [...gateways, ...open].map((e) => (
+          <li>
+            <a href={localePath(locale, `/entries/${e.id}`)}>{e.name}</a>
+            {' — '}
+            <span>{e.org}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <Callout heading={locale === 'ja' ? '型が保証しないこと' : 'What the type does not guarantee'}>
+      <p>{CAVEAT[locale]}</p>
+    </Callout>
+  </section>
+
+  <section>
+    <ClaimsNotice locale={locale} />
+  </section>
+
+  <p><a href={localePath(locale, '/entries')}>{t(locale, 'home.viewAll')}</a></p>
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SearchEntries from '../SearchEntries.astro';
+import { loadEntries } from '../../lib/load';
+import { t } from '../../i18n';
+import type { Locale } from '../../lib/taxonomy';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const entries = await loadEntries();
+---
+
+<BaseLayout
+  title={t(locale, 'entries.title')}
+  description={t(locale, 'entries.lead')}
+  path="/entries"
+  locale={locale}
+>
+  <h1>{t(locale, 'entries.title')}</h1>
+  <p class="lead">{t(locale, 'entries.lead')}</p>
+  <SearchEntries entries={entries} locale={locale} />
+</BaseLayout>

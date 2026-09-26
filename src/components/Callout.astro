@@ -1,0 +1,15 @@
+---
+interface Props {
+  heading: string;
+  /** Heading level inside the callout; sections already use h2. */
+  level?: 2 | 3;
+}
+
+const { heading, level = 2 } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+---
+
+<aside class="callout">
+  <Heading>{heading}</Heading>
+  <slot />
+</aside>

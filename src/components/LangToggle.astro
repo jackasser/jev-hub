@@ -1,0 +1,18 @@
+---
+import { t, localePath, otherLocale, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+const other = otherLocale(locale);
+// The accessible name has to contain the visible text, so the explanation is a prefix
+// rather than a replacement (WCAG 2.5.3, label in name).
+const label = `${t(locale, 'lang.switchLabel')}: ${t(locale, 'lang.switch')}`;
+---
+
+<a class="badge" href={localePath(other, path)} hreflang={other} lang={other} aria-label={label}>
+  {t(locale, 'lang.switch')}
+</a>

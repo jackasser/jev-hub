@@ -1,0 +1,37 @@
+---
+import Badge from './Badge.astro';
+import type { Entry } from '../lib/schema';
+import { CATEGORY_META, type Locale } from '../lib/taxonomy';
+import { t, localePath } from '../i18n';
+
+interface Props {
+  entry: Entry;
+  locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+const meta = CATEGORY_META[entry.category];
+const description = locale === 'ja' ? entry.description_ja : entry.description_en;
+---
+
+<li
+  class="card"
+  data-entry={entry.id}
+  data-category={entry.category}
+  data-stars={entry.stars === undefined ? undefined : String(entry.stars)}
+  data-added={entry.addedAt}
+>
+  <div class="card-top">
+    <span>{meta.label[locale]}</span>
+    {entry.official && <Badge variant="accent">{t(locale, 'card.official')}</Badge>}
+  </div>
+  <h3>
+    <a href={localePath(locale, `/entries/${entry.id}`)}>{entry.name}</a>
+  </h3>
+  <p>{description}</p>
+  <div class="card-foot">
+    <span>{entry.org}</span>
+    {entry.stars !== undefined && <span>{entry.stars.toLocaleString('en-US')} {t(locale, 'card.stars')}</span>}
+    <span>{entry.date}</span>
+  </div>
+</li>

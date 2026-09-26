@@ -1,0 +1,17 @@
+---
+import EntryCard from './EntryCard.astro';
+import type { Entry } from '../lib/schema';
+import type { Locale } from '../lib/taxonomy';
+
+interface Props {
+  entries: Entry[];
+  locale: Locale;
+  gridId?: string;
+}
+
+const { entries, locale, gridId } = Astro.props;
+---
+
+<ul class="grid" data-grid={gridId}>
+  {entries.map((entry) => <EntryCard entry={entry} locale={locale} />)}
+</ul>

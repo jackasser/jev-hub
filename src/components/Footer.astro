@@ -1,0 +1,24 @@
+---
+import { t, localePath, type Locale } from '../i18n';
+import { GITHUB_URL } from '../lib/site';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>{t(locale, 'footer.editorial')}</p>
+    <p>{t(locale, 'footer.notAffiliated')}</p>
+    <p>
+      <a href={localePath(locale, '/about')}>{t(locale, 'about.title')}</a>
+      {' · '}
+      <a href={locale === 'ja' ? '/ja/rss.xml' : '/rss.xml'}>RSS</a>
+      {' · '}
+      <a href={GITHUB_URL} rel="noopener noreferrer">GitHub</a>
+    </p>
+  </div>
+</footer>
