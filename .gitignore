@@ -1,5 +1,6 @@
 node_modules/
-dist/
+# Build output only. A bare `dist/` would also swallow tests/dist/, which is source.
+/dist/
 .astro/
 .env
 .env.*
