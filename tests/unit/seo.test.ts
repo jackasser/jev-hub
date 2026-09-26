@@ -3,6 +3,8 @@ import raw from '../../src/data/entries.json';
 import { entrySchema, type Entry } from '../../src/lib/schema';
 import { alternates, canonical, jsonLd, serializeJsonLd } from '../../src/lib/seo';
 import { CATEGORY_META } from '../../src/lib/taxonomy';
+import { BASE, BASE_ROOT } from '../../src/lib/base';
+import { localePath } from '../../src/i18n';
 
 const entries: Entry[] = (raw as unknown[]).map((row) => entrySchema.parse(row));
 const SITE = 'https://example.com';
@@ -47,9 +49,23 @@ describe('seo', () => {
   it('alternates returns en, ja and x-default as absolute URLs', () => {
     const links = alternates(SITE, '/entries/jev');
     expect(links.map((l) => l.hreflang)).toEqual(['en', 'ja', 'x-default']);
-    expect(links[0]!.href).toBe('https://example.com/entries/jev');
-    expect(links[1]!.href).toBe('https://example.com/ja/entries/jev');
+    expect(links[0]!.href).toBe(`${SITE}${BASE}/entries/jev`);
+    expect(links[1]!.href).toBe(`${SITE}${BASE}/ja/entries/jev`);
     expect(links[2]!.href).toBe(links[0]!.href);
+  });
+
+  it('AC-12-5: every alternate is absolute and sits under the deployment base', () => {
+    for (const path of ['/', '/entries', '/entries/jev', '/about']) {
+      for (const link of alternates(SITE, path)) {
+        expect(link.href.startsWith(`${SITE}${BASE_ROOT}`), `${path} ${link.hreflang}`).toBe(true);
+      }
+    }
+  });
+
+  it('AC-12-5: the deployed site root keeps its trailing slash, deeper pages do not', () => {
+    expect(canonical(SITE, localePath('en', '/'))).toBe(`${SITE}${BASE_ROOT}`);
+    expect(canonical(SITE, localePath('en', '/entries'))).toBe(`${SITE}${BASE}/entries`);
+    expect(canonical(SITE, localePath('ja', '/'))).toBe(`${SITE}${BASE}/ja`);
   });
 
   it('canonical drops a trailing slash except at the site root', () => {

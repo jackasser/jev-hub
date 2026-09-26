@@ -1,12 +1,12 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { SITE, BASE, BASE_ROOT } from './site.config.mjs';
 
-// Canonical origin: explicit env first, then a placeholder so builds are reproducible offline.
-const site = process.env.PUBLIC_SITE_URL || 'https://example.com';
-
+// R-12: the deployment target lives in site.config.mjs, which the app and the tests read too.
 export default defineConfig({
-  site,
+  site: SITE,
+  base: BASE || '/',
   output: 'static',
   trailingSlash: 'ignore',
   i18n: {
@@ -17,10 +17,11 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'en', locales: { en: 'en', ja: 'ja' } },
-      // Match canonical URLs, which carry no trailing slash (except the site root).
+      // Match canonical URLs, which carry no trailing slash except at the deployed root.
       serialize(item) {
         const u = new URL(item.url);
-        if (u.pathname !== '/' && u.pathname.endsWith('/')) item.url = item.url.replace(/\/+$/, '');
+        const root = u.pathname === '/' || u.pathname === BASE_ROOT;
+        if (!root && u.pathname.endsWith('/')) item.url = item.url.replace(/\/+$/, '');
         return item;
       },
     }),

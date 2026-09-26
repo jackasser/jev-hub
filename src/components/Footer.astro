@@ -16,7 +16,7 @@ const { locale } = Astro.props;
     <p>
       <a href={localePath(locale, '/about')}>{t(locale, 'about.title')}</a>
       {' · '}
-      <a href={locale === 'ja' ? '/ja/rss.xml' : '/rss.xml'}>RSS</a>
+      <a href={localePath(locale, '/rss.xml')}>RSS</a>
       {' · '}
       <a href={GITHUB_URL} rel="noopener noreferrer">GitHub</a>
     </p>

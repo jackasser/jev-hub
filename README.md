@@ -1,5 +1,7 @@
 # Jev Hub
 
+公開先: <https://jackasser.github.io/jev-hub/>
+
 TypeSafe AI の **Jev**（System One モデル）に関する情報をまとめる静的サイト。日本語と英語。
 
 公式ドキュメント・SDK・中継して使えるゲートウェイ・互換のオープン実装・連携ツール・解説記事・
@@ -35,7 +37,16 @@ npm run verify     # 型チェック + ユニット + ビルド + ビルド成�
 | `npm run refresh-stars` | `repoUrl` が GitHub のエントリの star 数を更新 |
 | `npm run linkcheck` | `dist/` 内のリンク切れ確認 |
 
-環境変数は [`.env.example`](.env.example) を参照。`PUBLIC_SITE_URL` は canonical と sitemap の基準になる。
+## 公開
+
+`main` への push で GitHub Actions がビルドし、型チェック・ユニット・ビルド成果物テストが通ったときだけ
+GitHub Pages へ公開する（[.github/workflows/deploy.yml](.github/workflows/deploy.yml)）。
+E2E はプレビューサーバーの常駐が要るのでローカルの `npm run verify` で回す。
+
+サブパス（`/jev-hub/`）配信なので、公開先を変えるときは [`site.config.mjs`](site.config.mjs) の
+`SITE` と `BASE` だけを直せばよい（環境変数 `PUBLIC_SITE_URL` / `PUBLIC_BASE_PATH` でも上書きできる）。
+
+環境変数は [`.env.example`](.env.example) を参照。
 
 ## ライセンス
 

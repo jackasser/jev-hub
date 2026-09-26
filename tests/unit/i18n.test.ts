@@ -11,6 +11,7 @@ import {
   stripLocale,
   t,
 } from '../../src/i18n';
+import { BASE, BASE_ROOT, withBase } from '../../src/lib/base';
 
 const PATHS = ['/', '/entries', '/entries/jev', '/what-is-jev', '/about', '/category/oss'];
 
@@ -41,11 +42,19 @@ describe('i18n', () => {
     }
   });
 
-  it('AC-05-1: the English path carries no prefix and the Japanese one does', () => {
-    expect(localePath('en', '/entries')).toBe('/entries');
-    expect(localePath('ja', '/entries')).toBe('/ja/entries');
-    expect(localePath('en', '/')).toBe('/');
-    expect(localePath('ja', '/')).toBe('/ja/');
+  it('AC-05-1: the English path carries no locale prefix and the Japanese one does', () => {
+    expect(localePath('en', '/entries')).toBe(withBase('/entries'));
+    expect(localePath('ja', '/entries')).toBe(withBase('/ja/entries'));
+    expect(localePath('en', '/')).toBe(BASE_ROOT);
+    expect(localePath('ja', '/')).toBe(withBase('/ja/'));
+  });
+
+  it('AC-12-2: every path localePath builds starts from the deployment base', () => {
+    for (const path of PATHS) {
+      for (const locale of LOCALES) {
+        expect(localePath(locale, path).startsWith(BASE_ROOT), `${locale}:${path}`).toBe(true);
+      }
+    }
   });
 
   it('AC-05-1: localeFromPath reads the prefix back', () => {
@@ -54,6 +63,13 @@ describe('i18n', () => {
     expect(localeFromPath('/ja/entries')).toBe('ja');
     // A path that merely starts with the letters "ja" is not the Japanese locale.
     expect(localeFromPath('/jaggedness')).toBe('en');
+  });
+
+  it('AC-12-3: localeFromPath reads a real browser pathname, base and all', () => {
+    expect(localeFromPath(`${BASE}/entries`)).toBe('en');
+    expect(localeFromPath(`${BASE}/ja/entries`)).toBe('ja');
+    expect(localeFromPath(BASE_ROOT)).toBe('en');
+    expect(localeFromPath(withBase('/ja/'))).toBe('ja');
   });
 
   it('AC-05-1: otherLocalePath flips the locale and keeps the page', () => {
@@ -68,7 +84,7 @@ describe('i18n', () => {
   });
 
   it('AC-04-3: a category link lands on the list with the facet preselected', () => {
-    expect(categoryPath('en', 'oss')).toBe('/entries?category=oss');
-    expect(categoryPath('ja', 'oss')).toBe('/ja/entries?category=oss');
+    expect(categoryPath('en', 'oss')).toBe(`${withBase('/entries')}?category=oss`);
+    expect(categoryPath('ja', 'oss')).toBe(`${withBase('/ja/entries')}?category=oss`);
   });
 });

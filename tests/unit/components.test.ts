@@ -9,7 +9,8 @@ import Badge from '../../src/components/Badge.astro';
 import Cover from '../../src/components/Cover.astro';
 import raw from '../../src/data/entries.json';
 import { entrySchema, type Entry } from '../../src/lib/schema';
-import { t } from '../../src/i18n';
+import { t, localePath } from '../../src/i18n';
+import { generatedCoverPath } from '../../src/lib/media';
 
 const entries: Entry[] = (raw as unknown[]).map((row) => entrySchema.parse(row));
 const container = await AstroContainer.create();
@@ -54,8 +55,8 @@ describe('EntryCard', () => {
   it('links to the localised detail page and shows the matching description', async () => {
     const en = await container.renderToString(EntryCard, { props: { entry, locale: 'en' } });
     const ja = await container.renderToString(EntryCard, { props: { entry, locale: 'ja' } });
-    expect(en).toContain(`href="/entries/${entry.id}"`);
-    expect(ja).toContain(`href="/ja/entries/${entry.id}"`);
+    expect(en).toContain(`href="${localePath('en', `/entries/${entry.id}`)}"`);
+    expect(ja).toContain(`href="${localePath('ja', `/entries/${entry.id}`)}"`);
     expect(ja).toContain(entry.description_ja.slice(0, 20));
   });
 
@@ -122,14 +123,14 @@ describe('Cover (R-11)', () => {
   it('AC-11-5: an entry with no repository shows its own generated cover file', async () => {
     const html = await container.renderToString(Cover, { props: { entry: withoutRepo } });
     expect(html).toContain('data-cover="generated"');
-    expect(html).toContain(`/covers/${withoutRepo.id}.svg`);
+    expect(html).toContain(generatedCoverPath(withoutRepo.id));
     expect(html).not.toContain('referrerpolicy');
   });
 
   it('AC-11-5: an external cover names the generated file as its fallback', async () => {
     const html = await container.renderToString(Cover, { props: { entry: withRepo } });
     expect(html).toContain('onerror');
-    expect(html).toContain(`/covers/${withRepo.id}.svg`);
+    expect(html).toContain(generatedCoverPath(withRepo.id));
   });
 
   it('AC-11-5: the detail cover loads eagerly, the card cover lazily', async () => {

@@ -1,6 +1,7 @@
 import type { Entry } from './schema';
 import { CATEGORY_META, type Locale } from './taxonomy';
 import { localePath } from '../i18n';
+import { isSiteRoot } from './base';
 
 export interface JsonLd {
   '@context': 'https://schema.org';
@@ -46,7 +47,10 @@ export interface Alternate {
 /** Absolute URL without a trailing slash (except the site root), matching the sitemap. */
 function absolute(site: string, path: string): string {
   const u = new URL(path, site.endsWith('/') ? site : `${site}/`);
-  if (u.pathname !== '/' && u.pathname.endsWith('/')) u.pathname = u.pathname.replace(/[/]+$/, '');
+  // Under a deployment base the site root is `/<base>/`, which keeps its slash (R-12).
+  if (!isSiteRoot(u.pathname) && u.pathname.endsWith('/')) {
+    u.pathname = u.pathname.replace(/[/]+$/, '');
+  }
   return u.toString();
 }
 

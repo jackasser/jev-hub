@@ -3,6 +3,7 @@ import raw from '../../src/data/entries.json';
 import { entrySchema, type Entry } from '../../src/lib/schema';
 import { CATEGORY_COLORS, coverFor, generatedCover, generatedCoverPath, githubRepo } from '../../src/lib/media';
 import { CATEGORIES } from '../../src/lib/taxonomy';
+import { BASE_ROOT, withBase } from '../../src/lib/base';
 
 const entries: Entry[] = (raw as unknown[]).map((row) => entrySchema.parse(row));
 const base = entries.find((e) => !e.repoUrl)!;
@@ -47,8 +48,13 @@ describe('coverFor', () => {
 
   it('AC-11-1: everything else gets the generated cover', () => {
     const cover = coverFor(base);
-    expect(cover).toEqual({ kind: 'generated', src: `/covers/${base.id}.svg` });
-    expect(generatedCoverPath(base.id)).toBe(`/covers/${base.id}.svg`);
+    expect(cover).toEqual({ kind: 'generated', src: generatedCoverPath(base.id) });
+  });
+
+  it('AC-12-4: the generated cover path carries the deployment base', () => {
+    expect(generatedCoverPath(base.id)).toBe(withBase(`/covers/${base.id}.svg`));
+    expect(generatedCoverPath(base.id).startsWith(BASE_ROOT)).toBe(true);
+    expect(generatedCoverPath(base.id).endsWith(`/covers/${base.id}.svg`)).toBe(true);
   });
 
   it('AC-11-1: every entry in the data set resolves to a cover', () => {

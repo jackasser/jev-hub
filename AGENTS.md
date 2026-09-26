@@ -12,6 +12,9 @@ TypeSafe AI の **Jev**（System One モデル）まわりのまとめサイト�
 - **ベンダーの数値はベンダーの数値として書く。** 速度・価格・「ハルシネーションが無い」は TypeSafe の公表値。
   独立検証のように書かない。測定は `benchmark` カテゴリに分け、手順が公開されているものだけを載せる。
 - **フォークは載せない。** `pi-*` 系のように同じ README のフォークが多数あるものは、上流だけを載せる。
+- **サブパス公開。** `https://jackasser.github.io/jev-hub/` に出ているので、内部の絶対パスには base が付く。
+  base を足すのは `localePath()` と `generatedCoverPath()` だけ（R-12）。新しいリンクを書くときは
+  `href="/entries"` と直書きせず `localePath(locale, '/entries')` を通す。公開先は `site.config.mjs` の 1 か所。
 - 開発サーバーはバックグラウンドで: `npx astro dev --background`（`astro dev stop` / `status` / `logs`）。
 
 ## 検証
@@ -31,6 +34,10 @@ npm run verify     # 上の 3 つを通しで
 - Astro は `data-x={''}` を値なしの `data-x` として描画する。空文字を期待するテストは落ちるので、
   無い値は `undefined` を渡して属性ごと省く
 - 404 の出力先は en が `dist/404.html`、ja が `dist/ja/404/index.html` で非対称
+  - base を付けても `dist/` の中の構造は変わらない（URL だけに付く）。`dist` テストでリンクを実ファイルに
+    突き合わせるときは `stripBase()` を通すこと
+  - Playwright の `baseURL` は base 込み（`http://localhost:4399/jev-hub/`）。spec 内の `goto` は
+    先頭スラッシュ無しの相対パスで書く（`goto('/entries')` だと base を飛び越えてしまう）
 - `import.meta.url` からパスを作るときは `URL.pathname` ではなく `fileURLToPath` を使う
   （日本語を含むパスがエンコードされたままになる）
 - 長いヒアドキュメントでシェル経由のファイル作成をすると壊れることがある。大きいファイルは書き込みツールで作る

@@ -1,5 +1,6 @@
 import type { Entry } from './schema';
 import { CATEGORY_META, type Category } from './taxonomy';
+import { withBase } from './base';
 
 export type Cover =
   | { kind: 'image'; src: string; credit: string }
@@ -15,7 +16,7 @@ export function githubRepo(url: string | undefined): string | null {
 
 /** Path of the build-time generated cover. Written for every entry, so it is always a valid fallback. */
 export function generatedCoverPath(id: string): string {
-  return `/covers/${id}.svg`;
+  return withBase(`/covers/${id}.svg`);
 }
 
 /** R-11: an embeddable preview image, else GitHub's social preview, else our own drawing. */

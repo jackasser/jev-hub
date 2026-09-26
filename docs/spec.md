@@ -1,6 +1,6 @@
 # Jev Hub 仕様書
 
-作成: 2026-09-26 / 状態: R-01〜R-11 の全 AC にテストあり・Green（ユニット 97 / dist 21 / E2E 11）。最終更新 2026-09-26
+作成: 2026-09-26 / 状態: R-01〜R-12 の全 AC にテストあり・Green（ユニット 109 / dist 21 / E2E 14）。最終更新 2026-09-26
 
 > **この文書が正。** 仕様に無いものは作らない。仕様を変えるときは先にここを直し、次にテスト、最後に実装。
 > 各受け入れ条件（AC）は必ずテスト ID を持つ。`todo` はまだテストが無い条件。
@@ -220,3 +220,30 @@ JSON-LD の埋め込みでは `<` をエスケープしてタグを閉じられ�
 | AC-11-5 | `EntryCard` は GitHub リポジトリのエントリで `opengraph.githubassets.com` の `<img>` を、それ以外で `/covers/<id>.svg` の `<img>` を描画する。inline `<svg` は含まない | `tests/unit/components.test.ts` |
 | AC-11-6 | ビルド後、全エントリに `covers/<id>.svg` が存在し `<svg` で始まる。一覧ページの全カードに `.card__cover` がある | `tests/dist/dist.test.ts` |
 | AC-11-7 | 390px 幅でカバー画像がカード幅を超えない | `tests/e2e/entries.spec.ts` |
+
+## R-12 サブパスでの公開（2026-09-26 ユーザー指示「githubpage で公開」）
+
+GitHub Pages のプロジェクトサイトとして `https://jackasser.github.io/jev-hub/` に公開する。
+オリジン直下ではないので、サイト内のすべての絶対パスに基準パス（base）が付く。
+
+- 公開先の設定は `site.config.mjs` の 1 か所に置く。`SITE`（正規のオリジン）と `BASE`（先頭スラッシュあり・
+  末尾スラッシュなし、ルート公開なら空文字）を書き出し、`astro.config.mjs`・アプリ・テスト・Playwright が
+  すべてここを読む。環境変数 `PUBLIC_SITE_URL` / `PUBLIC_BASE_PATH` で上書きできる。
+- 内部リンクの組み立ては `localePath()` に集約する。**base を足すのはこの関数と `generatedCoverPath()` だけ**で、
+  各コンポーネントは base を意識しない。
+- 逆向きの `stripLocale()` / `localeFromPath()` は base を取り除いてから判定する
+  （`/jev-hub/ja/entries` を日本語ページとして認識できるようにするため）。
+- canonical・hreflang・RSS の各項目・sitemap・`robots.txt` の Sitemap 行は、すべて `SITE + BASE` を基準にする。
+  公開トップ（`BASE + "/"`）だけは末尾スラッシュを落とさない。
+- `main` への push で GitHub Actions がビルドし、`astro check` → ユニット → ビルド → ビルド成果物テストが
+  通ったときだけ Pages へ公開する。E2E はプレビューサーバーの常駐が要るのでローカルの `npm run verify` で回す。
+
+| AC | Given / When / Then | テスト |
+|---|---|---|
+| AC-12-1 | `withBase()` / `stripBase()` が往復し、base が空でも二重スラッシュを作らない | `tests/unit/base.test.ts` |
+| AC-12-2 | `localePath()` の戻り値が base 付きで、`stripLocale()` で元の素のパスへ戻る | `tests/unit/i18n.test.ts` |
+| AC-12-3 | `localeFromPath()` が base 付きのパスからロケールを判定する | `tests/unit/i18n.test.ts` |
+| AC-12-4 | `generatedCoverPath()` が base 付きの `/covers/<id>.svg` を返す | `tests/unit/media.test.ts` |
+| AC-12-5 | canonical と hreflang が `SITE + BASE` から始まり、公開トップだけ末尾スラッシュを保つ | `tests/unit/seo.test.ts` |
+| AC-12-6 | ビルド成果物の内部リンク・画像・RSS・robots.txt・sitemap がすべて base 付き。base を外すと実ファイルに解決する | `tests/dist/dist.test.ts` |
+| AC-12-7 | base 付きのプレビューに対して一覧の検索・絞り込み・言語切替が動く | `tests/e2e/entries.spec.ts` |
