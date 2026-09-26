@@ -70,3 +70,24 @@ describe('entrySchema', () => {
     expect(entrySchema.safeParse(valid({ description_en: 'a'.repeat(601) })).success).toBe(false);
   });
 });
+
+describe('entrySchema: cover fields (R-11)', () => {
+  it('AC-11-4: an image without a credit is rejected, with one it is accepted', () => {
+    expect(entrySchema.safeParse(valid({ image: 'https://example.com/preview.png' })).success).toBe(false);
+    expect(
+      entrySchema.safeParse(valid({ image: 'https://example.com/preview.png', imageCredit: 'Example Org' }))
+        .success,
+    ).toBe(true);
+  });
+
+  it('AC-11-4: an image must be https so it loads on the https site', () => {
+    expect(
+      entrySchema.safeParse(valid({ image: 'http://example.com/preview.png', imageCredit: 'Example Org' }))
+        .success,
+    ).toBe(false);
+  });
+
+  it('AC-11-4: a credit on its own is harmless', () => {
+    expect(entrySchema.safeParse(valid({ imageCredit: 'Example Org' })).success).toBe(true);
+  });
+});

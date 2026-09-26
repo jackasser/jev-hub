@@ -597,6 +597,61 @@ section + section {
   margin: 0 0 0.5rem;
 }
 
+/* ---- covers (R-11) ---- */
+
+/* The cover sits flush to the card edges, so the card clips it to its own radius. */
+.card {
+  overflow: hidden;
+}
+
+.card__cover-link {
+  display: block;
+  margin: -1rem -1.05rem 0.2rem;
+}
+
+.card__cover,
+.detail__cover {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.card__cover {
+  border-bottom: 1px solid var(--rule);
+}
+
+.detail__cover {
+  max-width: 40rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+}
+
+.card__cover img,
+.detail__cover img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Credit for an embeddable preview image; generated covers carry none. */
+.cover__credit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  padding: 0.1rem 0.4rem;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  border-start-start-radius: var(--radius);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

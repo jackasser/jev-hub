@@ -1,5 +1,6 @@
 ---
 import Badge from './Badge.astro';
+import Cover from './Cover.astro';
 import type { Entry } from '../lib/schema';
 import { CATEGORY_META, type Locale } from '../lib/taxonomy';
 import { t, localePath } from '../i18n';
@@ -21,6 +22,9 @@ const description = locale === 'ja' ? entry.description_ja : entry.description_e
   data-stars={entry.stars === undefined ? undefined : String(entry.stars)}
   data-added={entry.addedAt}
 >
+  <a class="card__cover-link" href={localePath(locale, `/entries/${entry.id}`)} tabindex="-1" aria-hidden="true">
+    <Cover entry={entry} />
+  </a>
   <div class="card-top">
     <span>{meta.label[locale]}</span>
     {entry.official && <Badge variant="accent">{t(locale, 'card.official')}</Badge>}

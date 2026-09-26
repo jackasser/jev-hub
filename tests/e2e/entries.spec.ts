@@ -84,3 +84,27 @@ test.describe('locales (R-05)', () => {
     await expect(page.locator('.detail-actions a').first()).toHaveAttribute('rel', /noopener/);
   });
 });
+
+test.describe('covers (R-11)', () => {
+  test('AC-11-7: a cover never overflows its card at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/entries');
+    const card = page.locator('.card').first();
+    const cardBox = await card.boundingBox();
+    const imgBox = await card.locator('.card__cover img').boundingBox();
+    expect(cardBox).not.toBeNull();
+    expect(imgBox).not.toBeNull();
+    expect(imgBox!.width).toBeLessThanOrEqual(cardBox!.width + 1);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test('the generated cover file is served as an SVG', async ({ request }) => {
+    const res = await request.get('/covers/typesafe-docs.svg');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toContain('image/svg+xml');
+    expect(await res.text()).toContain('<svg');
+  });
+});

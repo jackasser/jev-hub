@@ -1,6 +1,6 @@
 # Jev Hub 仕様書
 
-作成: 2026-09-26 / 状態: 初版（R-01〜R-10 の全 AC にテストあり・Green。ユニット 73 / dist 17 / E2E 9）
+作成: 2026-09-26 / 状態: R-01〜R-11 の全 AC にテストあり・Green（ユニット 97 / dist 21 / E2E 11）。最終更新 2026-09-26
 
 > **この文書が正。** 仕様に無いものは作らない。仕様を変えるときは先にここを直し、次にテスト、最後に実装。
 > 各受け入れ条件（AC）は必ずテスト ID を持つ。`todo` はまだテストが無い条件。
@@ -189,3 +189,34 @@ JSON-LD の埋め込みでは `<` をエスケープしてタグを閉じられ�
 |---|---|---|
 | AC-10-1 | GitHub の URL から `owner/repo` を取り出す。非 GitHub は無視 | `tests/unit/refresh-stars.test.ts` |
 | AC-10-2 | 取得に失敗したエントリは既存の値を保つ | `tests/unit/refresh-stars.test.ts` |
+
+## R-11 カードのカバー画像（2026-09-26 ユーザー指示「各プロジェクトのサムネは？」）
+
+全カードと詳細ページの先頭に 2:1 のカバーを出す。優先順位:
+
+| 順 | 条件 | カバー | 出どころ |
+|---|---|---|---|
+| 1 | `image` あり（https の外部 URL、`imageCredit` 必須） | その画像 | 提供元が埋め込み用に配信しているプレビュー画像だけ。記事や README のスクリーンショットを複製・ホットリンクしない |
+| 2 | `repoUrl` が GitHub | `https://opengraph.githubassets.com/<id>/<owner>/<repo>` | GitHub が埋め込み用に生成するソーシャルプレビュー |
+| 3 | それ以外 | 生成カバー: `id` から決定的に作る確率分布の SVG。カテゴリ色、エントリ名入り。**ビルド時に `/covers/<id>.svg` として出力し `<img>` で参照する**（inline にしない） | 自作 |
+
+- 生成カバーの絵は、このサイトの主題に合わせて「選択肢ごとの確率」を模した棒の並びとする。
+  最大値の棒だけを濃く描き、その値を数値で添える。**実際のモデル出力ではなく `id` から決めた飾り**であることを
+  `aria-label` と About に明記する。
+- 生成カバーは同じ `id` なら常に同じ図（ビルドの再現性）。
+- 外部画像は `loading="lazy"`、`referrerpolicy="no-referrer"`、読み込み失敗時は `onerror` で `src` を
+  `/covers/<id>.svg` に差し替える。生成カバーは全エントリ分を常に出力するので、差し替え先は必ず存在する。
+- 詳細ページのカバーは `loading="eager"`。
+- 追加フィールド: `image`（https の URL）、`imageCredit`（string）。`image` があるとき `imageCredit` 必須。
+- 初版では `image` を持つエントリは無い（各提供元のプレビュー画像を 1 件ずつ確認していないため）。
+  足すときは R-11 の 1 の条件を満たすことを確認してから。
+
+| AC | Given / When / Then | テスト |
+|---|---|---|
+| AC-11-1 | `coverFor()` が上の優先順位どおりに `kind` と `src` を返す | `tests/unit/media.test.ts` |
+| AC-11-2 | `githubRepo()` が GitHub の URL から `owner/repo` を取り、それ以外は null | `tests/unit/media.test.ts` |
+| AC-11-3 | `generatedCover(id, category, name)` が同じ入力で同じ SVG を返し、`<svg` で始まり、カテゴリ色と名前を含む。名前の `<` `&` はエスケープされる | `tests/unit/media.test.ts` |
+| AC-11-4 | `image` があって `imageCredit` が無いエントリはスキーマで失敗する。`image` は https のみ | `tests/unit/schema.test.ts` |
+| AC-11-5 | `EntryCard` は GitHub リポジトリのエントリで `opengraph.githubassets.com` の `<img>` を、それ以外で `/covers/<id>.svg` の `<img>` を描画する。inline `<svg` は含まない | `tests/unit/components.test.ts` |
+| AC-11-6 | ビルド後、全エントリに `covers/<id>.svg` が存在し `<svg` で始まる。一覧ページの全カードに `.card__cover` がある | `tests/dist/dist.test.ts` |
+| AC-11-7 | 390px 幅でカバー画像がカード幅を超えない | `tests/e2e/entries.spec.ts` |

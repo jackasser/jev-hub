@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CATEGORY_COLORS } from '../../src/lib/media';
+import { CATEGORIES } from '../../src/lib/taxonomy';
 
 const css = readFileSync(fileURLToPath(new URL('../../src/styles/global.css', import.meta.url)), 'utf8');
 
@@ -69,5 +71,27 @@ describe('colour contrast', () => {
       expect(ratio(c.accent!, c['accent-soft']!), `${mode}/accent badge`).toBeGreaterThanOrEqual(4.5);
       expect(ratio(c.flag!, c['flag-soft']!), `${mode}/flag badge`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+});
+
+describe('generated cover colours (R-11)', () => {
+  it('AC-09-2: the label band keeps its white text above 4.5:1', () => {
+    for (const category of CATEGORIES) {
+      expect(ratio('#ffffff', CATEGORY_COLORS[category].deep), category).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('AC-09-2: the bars stay visible against their own tint', () => {
+    for (const category of CATEGORIES) {
+      expect(
+        ratio(CATEGORY_COLORS[category].ink, CATEGORY_COLORS[category].tint),
+        category,
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('every category gets its own hue', () => {
+    const inks = CATEGORIES.map((c) => CATEGORY_COLORS[c].ink);
+    expect(new Set(inks).size).toBe(inks.length);
   });
 });

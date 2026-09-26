@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Badge from '../Badge.astro';
+import Cover from '../Cover.astro';
 import EntryGrid from '../EntryGrid.astro';
 import type { Entry } from '../../lib/schema';
 import { loadEntries } from '../../lib/load';
@@ -29,6 +30,7 @@ const ld = serializeJsonLd(jsonLd(entry, locale));
   jsonLd={ld}
 >
   <article>
+    <Cover entry={entry} class="detail__cover" eager />
     <div class="detail-head">
       <p class="card-top">
         <a href={categoryPath(locale, entry.category)}>{meta.label[locale]}</a>

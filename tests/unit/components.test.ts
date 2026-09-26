@@ -6,6 +6,7 @@ import ClaimsNotice from '../../src/components/ClaimsNotice.astro';
 import EntryCard from '../../src/components/EntryCard.astro';
 import EntryGrid from '../../src/components/EntryGrid.astro';
 import Badge from '../../src/components/Badge.astro';
+import Cover from '../../src/components/Cover.astro';
 import raw from '../../src/data/entries.json';
 import { entrySchema, type Entry } from '../../src/lib/schema';
 import { t } from '../../src/i18n';
@@ -104,5 +105,56 @@ describe('global.css', () => {
   it('AC-09-2: dark mode redefines the colour tokens', () => {
     expect(css).toContain('@media (prefers-color-scheme: dark)');
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+  });
+});
+
+describe('Cover (R-11)', () => {
+  const withRepo = entries.find((e) => e.repoUrl && !e.image)!;
+  const withoutRepo = entries.find((e) => !e.repoUrl && !e.image)!;
+
+  it('AC-11-5: a GitHub entry shows the social preview GitHub generates', async () => {
+    const html = await container.renderToString(Cover, { props: { entry: withRepo } });
+    expect(html).toContain('data-cover="github"');
+    expect(html).toContain('opengraph.githubassets.com');
+    expect(html).toContain('referrerpolicy="no-referrer"');
+  });
+
+  it('AC-11-5: an entry with no repository shows its own generated cover file', async () => {
+    const html = await container.renderToString(Cover, { props: { entry: withoutRepo } });
+    expect(html).toContain('data-cover="generated"');
+    expect(html).toContain(`/covers/${withoutRepo.id}.svg`);
+    expect(html).not.toContain('referrerpolicy');
+  });
+
+  it('AC-11-5: an external cover names the generated file as its fallback', async () => {
+    const html = await container.renderToString(Cover, { props: { entry: withRepo } });
+    expect(html).toContain('onerror');
+    expect(html).toContain(`/covers/${withRepo.id}.svg`);
+  });
+
+  it('AC-11-5: the detail cover loads eagerly, the card cover lazily', async () => {
+    const detail = await container.renderToString(Cover, {
+      props: { entry: withRepo, class: 'detail__cover', eager: true },
+    });
+    const card = await container.renderToString(Cover, { props: { entry: withRepo } });
+    expect(detail).toContain('loading="eager"');
+    expect(detail).toContain('detail__cover');
+    expect(card).toContain('loading="lazy"');
+    expect(card).toContain('card__cover');
+  });
+
+  it('AC-11-5: every entry renders a cover as an <img>, never an inline <svg>', async () => {
+    for (const entry of entries) {
+      const html = await container.renderToString(EntryCard, { props: { entry, locale: 'en' } });
+      expect(html, entry.id).toContain('class="card__cover"');
+      expect(html, entry.id).toContain('<img');
+      expect(html, entry.id).not.toContain('<svg');
+    }
+  });
+
+  it('the decorative cover link is kept out of the tab order and the accessibility tree', async () => {
+    const html = await container.renderToString(EntryCard, { props: { entry: withRepo, locale: 'en' } });
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('tabindex="-1"');
   });
 });

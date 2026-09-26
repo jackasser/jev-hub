@@ -3,6 +3,8 @@ import { CATEGORIES } from './taxonomy';
 
 /** http(s) only: `javascript:` / `data:` / `ftp:` never become links (R-08). */
 const httpUrl = z.url().refine((v) => /^https?:\/\//i.test(v), 'only http(s) URLs are allowed');
+/** Embedded media must be https so it loads on the https site (R-11). */
+const httpsUrl = z.url().refine((v) => /^https:\/\//i.test(v), 'only https URLs are allowed');
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
 
 export const entrySchema = z
@@ -25,6 +27,8 @@ export const entrySchema = z
     official: z.boolean().default(false),
     description_en: z.string().min(60).max(600),
     description_ja: z.string().min(40).max(600),
+    image: httpsUrl.optional(),
+    imageCredit: z.string().min(1).optional(),
     featured: z.boolean().default(false),
     sourceRefs: z.array(httpUrl).min(1),
   })
@@ -32,6 +36,10 @@ export const entrySchema = z
   .refine((e) => e.stars === undefined || Boolean(e.repoUrl), {
     message: 'stars require a repoUrl',
     path: ['stars'],
+  })
+  .refine((e) => !e.image || Boolean(e.imageCredit), {
+    message: 'imageCredit is required when image is set',
+    path: ['imageCredit'],
   });
 
 export type Entry = z.infer<typeof entrySchema>;
