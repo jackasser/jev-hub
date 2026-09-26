@@ -152,8 +152,8 @@
     "date": "2026-09-16",
     "addedAt": "2026-09-26",
     "featured": true,
-    "description_en": "A route to the model that does not need a TypeSafe account of your own: the gateway exposes Jev under its own model id, and the AI SDK calls it through a dedicated evaluate function rather than a chat completion. Worth knowing about, because several of the independent evaluations listed on this site ran their calls through it.",
-    "description_ja": "自分で TypeSafe のアカウントを取らなくても到達できる経路。ゲートウェイ側のモデル ID で Jev が公開されていて、AI SDK からはチャット補完ではなく専用の評価関数で呼ぶ。このサイトに載せている独立評価のいくつかは、実際にこの経路で測っている。",
+    "description_en": "A route to the model that does not need a TypeSafe account of your own: the gateway exposes Jev under its own model id, and the AI SDK calls it through a dedicated evaluate function rather than a chat completion. The gateway lists the model id typesafe-ai/jev and the same published input price as TypeSafe. Worth knowing about, because one of the independent evaluations listed here — the out-of-distribution calibration test — ran its calls through it.",
+    "description_ja": "自分で TypeSafe のアカウントを取らなくても到達できる経路。ゲートウェイ側のモデル ID で Jev が公開されていて、AI SDK からはチャット補完ではなく専用の評価関数で呼ぶ。ゲートウェイ側ではモデル ID が typesafe-ai/jev で、入力価格は TypeSafe の公表値と同じ。このサイトに載せている独立評価のうち、分布外の校正テストは実際にこの経路で測っている。",
     "sourceRefs": [
       "https://vercel.com/changelog/typesafe-ai-jev-now-available-on-ai-gateway",
       "https://vercel.com/ai-gateway/models/jev"
@@ -240,8 +240,8 @@
     "addedAt": "2026-09-26",
     "stars": 1,
     "starsUpdatedAt": "2026-09-26",
-    "description_en": "A sidecar for the Pi coding agent that runs a handful of hazard checks before a shell command, a write or an edit goes through, and can be set to advise, to watch silently, or to block. Small and early. It is listed here as the upstream of a fork family that has spread faster than the original; the forks themselves are not listed.",
-    "description_ja": "Pi コーディングエージェント向けのサイドカー。シェル実行・書き込み・編集の前に危険度のチェックをいくつか走らせ、助言のみ・黙って記録・実際に止める、を切り替えられる。まだ小さく初期段階。原作よりフォークの方が広まっている系統の上流にあたるので載せているが、フォーク自体はこのサイトには載せない。",
+    "description_en": "A sidecar for the Pi coding agent that runs a handful of hazard checks before a shell command, a write or an edit goes through, and can be set to advise, to watch silently, or to block. Small and early. It is listed because it is the library that the pi-warden guardrail tools build on; pi-warden itself exists as many near-identical forks whose original could not be established, so none of those are listed here.",
+    "description_ja": "Pi コーディングエージェント向けのサイドカー。シェル実行・書き込み・編集の前に危険度のチェックをいくつか走らせ、助言のみ・黙って記録・実際に止める、を切り替えられる。まだ小さく初期段階。ガードレール系ツール pi-warden が土台にしているライブラリなので載せている。pi-warden 自体はほぼ同じ内容のフォークが多数あり、どれが元なのか確定できなかったため、それらは載せていない。",
     "sourceRefs": ["https://github.com/twilwa/pi-typesafe"]
   },
   {

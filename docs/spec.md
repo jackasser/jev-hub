@@ -1,6 +1,6 @@
 # Jev Hub 仕様書
 
-作成: 2026-09-26 / 状態: 初版（R-01〜R-10 の全 AC にテストあり・Green。ユニット 73 / dist 16 / E2E 9）
+作成: 2026-09-26 / 状態: 初版（R-01〜R-10 の全 AC にテストあり・Green。ユニット 73 / dist 17 / E2E 9）
 
 > **この文書が正。** 仕様に無いものは作らない。仕様を変えるときは先にここを直し、次にテスト、最後に実装。
 > 各受け入れ条件（AC）は必ずテスト ID を持つ。`todo` はまだテストが無い条件。
@@ -146,7 +146,7 @@ TypeSafe が公表する性能・価格の数値（例: 193.6x 速い、444.6x �
 | AC-06-1 | `sortRows` が 3 モードで安定に並べる。`stars` 不明は既知の 0 より下。実ブラウザでも検索・絞り込み・並べ替えが効く | `tests/unit/sort.test.ts` / `tests/e2e/entries.spec.ts` |
 | AC-06-2 | `toSearchIndex` が全エントリを検索用の形に落とす | `tests/unit/entries.test.ts` |
 | AC-06-3 | JS 無効時も全エントリのカードが HTML に存在する | `tests/dist/dist.test.ts` |
-| AC-06-4 | `/search-index.json` が生成され、件数がデータと一致する | `tests/dist/dist.test.ts` |
+| AC-06-4 | `/search-index.json` が生成され件数が一致し、一覧ページに埋め込む索引も `<` をエスケープして同じ件数を持つ | `tests/dist/dist.test.ts` |
 
 ## R-07 構造化データと配信
 
